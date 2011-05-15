@@ -30,7 +30,7 @@ public class Server {
 
 		public void run() {
 			String threadName = Thread.currentThread().getName();// nome da
-																	// thread
+			// thread
 			String stringClient = s.getInetAddress().toString();// IP do cliente
 			System.out.println("conectado com " + stringClient);
 			try {// inicio try
@@ -49,7 +49,7 @@ public class Server {
 					} else if (line.equalsIgnoreCase("horas")) {
 
 						output.println(serverJobs.hournow()); // echo do input
-																// para output
+						// para output
 					} else if (line.equalsIgnoreCase("data")) {
 						output.println(serverJobs.datenow());
 					} else if (line.equalsIgnoreCase("frase")) {
