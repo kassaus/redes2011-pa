@@ -2,17 +2,14 @@ package entidades;
 
 public class Cliente {
 
-	private Integer ip;
+	private String ip;
 
-	public Cliente() {
-
-	}
-
-	public void setIp(Integer ip) {
+	public Cliente(String ip) {
 		this.ip = ip;
+
 	}
 
-	public Integer getIp() {
+	public String getIp() {
 		return ip;
 	}
 
