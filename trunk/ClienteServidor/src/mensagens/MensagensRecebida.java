@@ -1,6 +1,6 @@
-package entidades;
+package mensagens;
 
-public abstract class MensagensRecebida extends Mensagens {
+public abstract class MensagensRecebida extends Mensagem {
 	private String comando;
 
 	protected MensagensRecebida() {
