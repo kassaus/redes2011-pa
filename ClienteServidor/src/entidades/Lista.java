@@ -1,7 +1,6 @@
 package entidades;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public abstract class Lista {
 	private ArrayList<Object> lista = null;
@@ -11,30 +10,20 @@ public abstract class Lista {
 		lista = new ArrayList<Object>();
 	}
 
-	public void setLista(ArrayList<Object> lista) {
-		this.lista = lista;
-	}
-
-	public void addLista(ArrayList<Object> lista) {
-		int repeticoes = 0;
-
-		Iterator<Object> iterator = lista.iterator();
-		while (iterator.hasNext()) {
-			if (this.lista.contains(iterator.next())) {
-				repeticoes++;
-			} else {
-				this.lista.add(iterator);
-			}
-		}
-
-	}
-
-	public Boolean procuraLista(Object objecto) {
-		return this.lista.contains(lista);
-	}
-
-	public Boolean removeLista(Object objecto) {
+	public Boolean removeItem(final Object objecto) {
 		return this.lista.remove(objecto);
+	}
+
+	public Boolean adicionarItem(final Object objecto) {
+		return lista.add(objecto);
+	}
+
+	public Object procuraItem(final Object objecto) {
+		final int indice = lista.indexOf(objecto);
+		if (indice != -1) {
+			return lista.get(indice);
+		}
+		return null;
 	}
 
 }

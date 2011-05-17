@@ -1,6 +1,6 @@
 package gestor;
 
-import entidades.MensagemObterLista;
+import mensagens.MensagemObterLista;
 
 public class gestor {
 
