@@ -1,20 +1,24 @@
 package gestor;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetAddress;
 
-import serverUtils.MetodosServidor;
+import mensagens.Mensagem;
+import mensagens.util.Codificador;
+import enumerados.TipoLista;
+import enumerados.TipoMensagem;
 
 public class GestorMensagem {
 
+	private static final int VAZIO = -1;
+
 	public GestorMensagem() throws IOException {
-		
 
-	public void enviarMensagem() {
+	}
 
+	public static String getListaItens(InetAddress ip) {
+		return Codificador.codificar(new Mensagem(TipoMensagem.OBTER_LISTA
+				.ordinal(), ip.getHostAddress(), VAZIO, VAZIO, String
+				.valueOf(TipoLista.LISTA_ITENS.ordinal())));
 	}
 }
