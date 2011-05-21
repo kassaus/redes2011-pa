@@ -1,19 +1,19 @@
 package enumerados;
 
-public enum Comando {
-	INVALIDO(-1), LISTAR, REMOVER, ADICIONAR, DESCONECTAR, OBTER;
+public enum Alvo {
+	INVALIDO(-1), LISTA_BRANCA, LISTA_NEGRA, LISTA_VOTACAO, LISTA_ONLINE, LISTA_RESULTADOS;
 
 	int index;
 
-	private Comando() {
+	private Alvo() {
 		this.index = ordinal();
 	}
 
-	private Comando(int index) {
+	private Alvo(int index) {
 		this.index = index;
 	}
 
-	public static Comando getLabel(int index) {
+	public static Alvo getLabel(int index) {
 		if (index == -1) {
 			return INVALIDO;
 		} else {
