@@ -9,7 +9,9 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
-public class Gestor {
+import mensagens.Mensagem;
+
+public abstract class Gestor {
 	private static final String RESOURCES_PATH = "resources/";
 
 	private static final String ADMIN_FILE = RESOURCES_PATH + "admin.dat";
@@ -23,40 +25,39 @@ public class Gestor {
 			+ "listaVotantes.dat";
 	private static final String LISTA_VOTOS = RESOURCES_PATH + "votos.dat";
 
-	List<String> listaAdmin = null;
-	List<String> listaBranca = null;
-	List<String> listaNegra = null;
-	List<String> listaVotacao = null;
-	List<String> listaVotantes = null;
-	List<String> listaVotos = null;
+	static List<String> listaAdmin = null;
+	static List<String> listaBranca = null;
+	static List<String> listaNegra = null;
+	static List<String> listaVotacao = null;
+	static List<String> listaVotantes = null;
+	static List<String> listaVotos = null;
 
-	Calendar dataInicio = null;
-	Calendar dataFim = null;
-	Integer duracaoVotacao;
+	static Calendar dataInicio = null;
+	static Calendar dataFim = null;
+	static Integer duracaoVotacao;
 
-	public Gestor() {
+	static {
 		listaAdmin = new ArrayList<String>();
-		listaAdmin.addAll((readFile(getClass().getClassLoader().getResource(
+		listaAdmin.addAll((readFile(Gestor.class.getClassLoader().getResource(
 				ADMIN_FILE).getPath())));
 		listaBranca = new ArrayList<String>();
-		listaBranca.addAll(readFile(getClass().getClassLoader().getResource(
+		listaBranca.addAll(readFile(Gestor.class.getClassLoader().getResource(
 				LISTA_BRANCA_FILE).getPath()));
 		listaNegra = new ArrayList<String>();
-		listaNegra.addAll(readFile(getClass().getClassLoader().getResource(
+		listaNegra.addAll(readFile(Gestor.class.getClassLoader().getResource(
 				LISTA_NEGRA_FILE).getPath()));
 		listaVotacao = new ArrayList<String>();
-		listaVotacao.addAll(readFile(getClass().getClassLoader().getResource(
+		listaVotacao.addAll(readFile(Gestor.class.getClassLoader().getResource(
 				LISTA_ITEMS_VOTACAO).getPath()));
 		listaVotantes = new ArrayList<String>();
-		listaVotantes.addAll(readFile(getClass().getClassLoader().getResource(
-				LISTA_VOTANTES).getPath()));
+		listaVotantes.addAll(readFile(Gestor.class.getClassLoader()
+				.getResource(LISTA_VOTANTES).getPath()));
 		listaVotos = new ArrayList<String>();
-		listaVotos.addAll(readFile(getClass().getClassLoader().getResource(
+		listaVotos.addAll(readFile(Gestor.class.getClassLoader().getResource(
 				LISTA_VOTOS).getPath()));
-
 	}
 
-	private ArrayList<String> readFile(String ficheiro) {
+	private static ArrayList<String> readFile(String ficheiro) {
 		ArrayList<String> dados = new ArrayList<String>();
 		String linha;
 		try {
@@ -72,13 +73,13 @@ public class Gestor {
 		return dados;
 	}
 
-	public void imprimeLista(List<Object> lista) {
+	public static void imprimeLista(List<Object> lista) {
 		for (Object item : lista) {
 			System.out.println((String) item);
 		}
 	}
 
-	public void imprimeListaTodas() {
+	public static void imprimeListaTodas() {
 		System.out.println("*********Lista Admin*******");
 		for (String item : listaAdmin) {
 			System.out.println(item);
@@ -113,52 +114,65 @@ public class Gestor {
 		System.out.println(itemVencedor());
 	}
 
-	public List<String> listarItensVotacao() {
+	public static List<String> listarItensVotacao() {
 		return listaVotacao;
 
 	}
 
-	public void adicionarItens(String item) {
+	public static void adicionarItens(String item) {
 		listaVotacao.add(item);
 
 	}
 
-	public void removerItem(int item) {
+	public static void removerItem(int item) {
 		listaVotacao.remove(item);
 
 	}
 
-	public List<String> listarVotantes() {
+	public static List<String> listarVotantes() {
 		return listaVotantes;
 
 	}
 
-	public List<String> listaBranca() {
-		return listaBranca;
+	public static Mensagem listarListaBranca(final Mensagem msg) {
+		final Mensagem mensagem = new Mensagem(msg);
+
+		StringBuilder texto = new StringBuilder();
+
+		for (String ip : listaBranca) {
+			texto.append(";");
+			texto.append(ip);
+		}
+
+		texto.deleteCharAt(0);
+
+		mensagem.setTexto(texto.toString());
+
+		return mensagem;
 
 	}
 
-	public void adicionarVotanteListaBranca(String ip) {
+	public static void adicionarVotanteListaBranca(String ip) {
 		listaBranca.add(ip);
 
 	}
 
-	public List<String> listaNegra() {
+	public static List<String> listaNegra() {
 		return listaNegra;
 
 	}
 
-	public void adicionarVotanteListaNegra(String ip) {
+	public static void adicionarVotanteListaNegra(String ip) {
 
 		listaNegra.add(ip);
 	}
 
-	public void desconectarVotante(String ip) {
+	public static void desconectarVotante(String ip) {
 		// desenvolver....
 
 	}
 
-	public void iniciarVotacao() {
+	public static void iniciarVotacao() {
 		if (duracaoVotacao != null) {
 			dataInicio = Calendar.getInstance();
 			dataFim = (Calendar) dataInicio.clone();
@@ -169,12 +183,12 @@ public class Gestor {
 
 	}
 
-	public void definirDuracao(int duracao) {
+	public static void definirDuracao(int duracao) {
 		duracaoVotacao = duracao;
 
 	}
 
-	public void tempoRestante() {
+	public static void tempoRestante() {
 		long tempRestante = dataFim.getTimeInMillis()
 				- Calendar.getInstance().getTimeInMillis();
 		int segundos = (int) (tempRestante / 1000) % 60;
@@ -184,12 +198,12 @@ public class Gestor {
 		// enviar o tempo para o Cliente
 	}
 
-	public int numeroTotalVotos() {
+	public static int numeroTotalVotos() {
 		return listaVotantes.size();
 
 	}
 
-	public List<String> resultadosVotacao() {
+	public static List<String> resultadosVotacao() {
 		List<String> percentagens = new ArrayList<String>();
 		int totalVotos = 0;
 		double valorPercentagem = 0;
@@ -205,13 +219,14 @@ public class Gestor {
 		return percentagens;
 	}
 
-	public String itemVencedor() {
+	public static String itemVencedor() {
 		return Collections.max(listaVotos);
 	}
 
-	public void votar(String ip, int index) {
+	public static void votar(String ip, int index) {
 		listaVotantes.add(ip);
 		listaVotos.set(index, Integer.toString(Integer.parseInt(listaVotos
 				.get(index)) + 1));
 	}
+
 }

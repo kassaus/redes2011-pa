@@ -1,7 +1,7 @@
 package enumerados;
 
 public enum TipoMensagem {
-	INVALIDO(-1), OBTER_LISTA, OBTER_NUMERO, VOTAR, MODIFICAR_LISTA, DESCONECTAR;
+	INVALIDO(-1), LISTA, VOTO, SISTEMA, NUMERO;
 
 	int index;
 

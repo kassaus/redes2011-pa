@@ -1,26 +1,33 @@
 package mensagens;
 
 import enumerados.Accao;
-import enumerados.Comando;
+import enumerados.Alvo;
 import enumerados.TipoMensagem;
 
 public class Mensagem {
 	private String ip = null;
 	private TipoMensagem tipoMensagem;
-	private Comando comando;
+	private Alvo alvo;
 	private Accao accao;
-
 	private String texto;
 
 	public Mensagem() {
 
 	}
 
-	public Mensagem(int tipoMensagem, String ip, int comando, int accao,
+	public Mensagem(final Mensagem mensagem) {
+		ip = mensagem.getIp();
+		tipoMensagem = mensagem.getTipoMensagem();
+		alvo = mensagem.getAlvo();
+		accao = mensagem.getAccao();
+		texto = mensagem.getTexto();
+	}
+
+	public Mensagem(int tipoMensagem, String ip, int alvo, int accao,
 			String texto) {
 		this.ip = ip;
 		this.tipoMensagem = TipoMensagem.getLabel(tipoMensagem);
-		this.comando = Comando.getLabel(comando);
+		this.alvo = Alvo.getLabel(alvo);
 		this.accao = Accao.getLabel(accao);
 		this.texto = texto;
 	}
@@ -41,12 +48,12 @@ public class Mensagem {
 		this.tipoMensagem = tipoMensagem;
 	}
 
-	public final Comando getComando() {
-		return comando;
+	public final Alvo getAlvo() {
+		return alvo;
 	}
 
-	public final void setComando(Comando comando) {
-		this.comando = comando;
+	public final void setAlvo(Alvo alvo) {
+		this.alvo = alvo;
 	}
 
 	public final Accao getAccao() {

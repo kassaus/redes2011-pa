@@ -7,7 +7,9 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import serverUtils.MetodosServidor;
+import mensagens.Mensagem;
+import mensagens.util.Codificador;
+import mensagens.util.Descodificador;
 
 public class Main {
 
@@ -16,10 +18,6 @@ public class Main {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		Gestor gestor = new Gestor();
-		gestor.imprimeListaTodas();
-		gestor.votar("192.000.000.001", 0);
-		gestor.imprimeListaTodas();
 
 		// criar socket na porta 6500
 		ServerSocket server = new ServerSocket(6500);
@@ -27,65 +25,231 @@ public class Main {
 		while (true) {// aguarda clientes
 			Socket socket = null;
 			socket = server.accept();
-			System.out.println("nova conexao..");
-			Thread t = new Thread(new Cliente(socket));
+			Thread t = new Thread(new EchoClientThread(socket));
 			t.start();
 		}// fim aguarda clientes
-	}
+	}// fim main
 
-	public static class Cliente implements Runnable {
+	public static class EchoClientThread implements Runnable {
 		private Socket s;
 
-		public Cliente(Socket socket) {
+		public EchoClientThread(Socket socket) {
 			this.s = socket;
 		}
 
 		public void run() {
-			String threadName = Thread.currentThread().getName();// nome da
 			// thread
 			String stringClient = s.getInetAddress().toString();// IP do cliente
 			System.out.println("conectado com " + stringClient);
 			try {// inicio try
-				BufferedReader input = new BufferedReader(
+				final BufferedReader input = new BufferedReader(
 						new InputStreamReader(s.getInputStream()));
-				PrintStream output = new PrintStream(s.getOutputStream(), true);
+				final PrintStream output = new PrintStream(s.getOutputStream(),
+						true);
 
 				String line;
-				MetodosServidor serverJobs = new MetodosServidor();
 
-				while ((line = input.readLine()) != null) {// ciclo de input
-					System.out.println(stringClient + ": " + threadName + ": "
-							+ line);// imprime mensagem
-					if (line.equalsIgnoreCase("quit")) {
-						break;
-					} else if (line.equalsIgnoreCase("horas")) {
+				while ((line = input.readLine()) != null) {
+					boolean sair = false;
 
-						output.println(serverJobs.hournow()); // echo do input
-						// para output
-					} else if (line.equalsIgnoreCase("data")) {
-						output.println(serverJobs.datenow());
-					} else if (line.equalsIgnoreCase("frase")) {
-						output.println(serverJobs.getFrase());
-					} else if (line.equalsIgnoreCase("lista")) {
-						for (int i = 0; i < serverJobs.getFraseTotal(); i++) {
-							output.println(serverJobs.getFrasePosition(i));
+					final Mensagem msg = Descodificador.descodificar(line);
+					Mensagem resposta = null;
+					String strResposta = null;
+
+					switch (msg.getTipoMensagem()) {
+					case LISTA:
+						if (msg.getAccao() != null) {
+							switch (msg.getAccao()) {
+
+							case ADICIONAR:
+
+								if (msg.getAlvo() != null) {
+									switch (msg.getAlvo()) {
+									case LISTA_BRANCA:
+
+										break;
+									case LISTA_NEGRA:
+
+										break;
+
+									case LISTA_VOTACAO:
+
+										break;
+
+									default:
+										break;
+									}
+								}
+
+								break;
+							case LISTAR:
+
+								if (msg.getAlvo() != null) {
+									switch (msg.getAlvo()) {
+									case LISTA_BRANCA:
+
+										resposta = Gestor
+												.listarListaBranca(msg);
+										strResposta = Codificador
+												.codificar(resposta);
+
+										output.println(strResposta);
+
+										break;
+									case LISTA_NEGRA:
+
+										break;
+
+									case LISTA_VOTACAO:
+
+										break;
+
+									case LISTA_ONLINE:
+
+										break;
+
+									case LISTA_RESULTADOS:
+
+										break;
+
+									default:
+										break;
+									}
+								}
+
+								break;
+							case REMOVER:
+
+								if (msg.getAlvo() != null) {
+									switch (msg.getAlvo()) {
+									case LISTA_VOTACAO:
+
+										break;
+
+									default:
+										break;
+									}
+								}
+
+								break;
+
+							default:
+								break;
+							}
 						}
+
+						break;
+
+					case NUMERO:
+
+						if (msg.getAccao() != null) {
+							switch (msg.getAccao()) {
+							case TMP_RESTANTE:
+
+								break;
+							case TOTAL:
+
+								break;
+							case VENCEDOR:
+
+								break;
+
+							default:
+								break;
+							}
+						}
+
+						break;
+
+					case VOTO:
+
+						break;
+
+					case SISTEMA:
+
+						if (msg.getAccao() != null) {
+							switch (msg.getAccao()) {
+							case DESCONECTAR:
+
+								break;
+
+							case SAIR:
+								System.out.println("Cliente " + stringClient
+										+ " desconectado.");
+								output.println("Ligação terminada.");
+								sair = true;
+
+								break;
+
+							default:
+								break;
+							}
+						}
+						break;
+
+					default:
+						break;
 					}
 
-					else {
-						output.println("Comando desconhecido!");
+					if (sair) {
+						break;
 					}
-				}// fim do ciclo de input
-				output.println("ate logo!");
+				}
+
 				input.close();// termina input
 				output.close();// termina output
 				s.close();// termina socket
 			}// fim try
 			catch (Exception e) {
-				System.err.println("Erro: " + e);
+				e.printStackTrace();
 			}
-			System.out.println("cliente " + stringClient + " desconectado!");
 		}// fim metodo run
 	}// fim classe EchoClientThread
+	/*
+	 * Gestor gestor = new Gestor(); gestor.imprimeListaTodas();
+	 * gestor.votar("192.000.000.001", 0); gestor.imprimeListaTodas();
+	 */
 
+	// criar socket na porta 6500
+	/*
+	 * ServerSocket server = new ServerSocket(6500);
+	 * System.out.println("servidor iniciado na porta 6500"); while (true) {//
+	 * aguarda clientes Socket socket = null; socket = server.accept();
+	 * System.out.println("nova conexao.."); Thread t = new Thread(new
+	 * Cliente(socket)); t.start(); }// fim aguarda clientes }
+	 * 
+	 * public static class Cliente implements Runnable { private Socket s;
+	 * 
+	 * public Cliente(Socket socket) { this.s = socket; }
+	 * 
+	 * public void run() { String threadName =
+	 * Thread.currentThread().getName();// nome da // thread String stringClient
+	 * = s.getInetAddress().toString();// IP do cliente
+	 * System.out.println("conectado com " + stringClient); try {// inicio try
+	 * BufferedReader input = new BufferedReader( new
+	 * InputStreamReader(s.getInputStream())); PrintStream output = new
+	 * PrintStream(s.getOutputStream(), true);
+	 * 
+	 * String line; MetodosServidor serverJobs = new MetodosServidor();
+	 * 
+	 * while ((line = input.readLine()) != null) {// ciclo de input
+	 * System.out.println(stringClient + ": " + threadName + ": " + line);//
+	 * imprime mensagem if (line.equalsIgnoreCase("quit")) { break; } else if
+	 * (line.equalsIgnoreCase("horas")) {
+	 * 
+	 * output.println(serverJobs.hournow()); // echo do input // para output }
+	 * else if (line.equalsIgnoreCase("data")) {
+	 * output.println(serverJobs.datenow()); } else if
+	 * (line.equalsIgnoreCase("frase")) { output.println(serverJobs.getFrase());
+	 * } else if (line.equalsIgnoreCase("lista")) { for (int i = 0; i <
+	 * serverJobs.getFraseTotal(); i++) {
+	 * output.println(serverJobs.getFrasePosition(i)); } }
+	 * 
+	 * else { output.println("Alvo desconhecido!"); } }// fim do ciclo de input
+	 * output.println("ate logo!"); input.close();// termina input
+	 * output.close();// termina output s.close();// termina socket }// fim try
+	 * catch (Exception e) { System.err.println("Erro: " + e); }
+	 * System.out.println("cliente " + stringClient + " desconectado!"); }// fim
+	 * metodo run }// fim classe EchoClientThread
+	 */
 }
