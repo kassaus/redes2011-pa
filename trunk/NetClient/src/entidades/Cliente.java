@@ -1,7 +1,5 @@
 package entidades;
 
-import gestor.GestorMensagem;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,15 +13,19 @@ import java.util.Scanner;
 
 import mensagens.Mensagem;
 import mensagens.util.Descodificador;
+import util.ConstrutorMensagens;
 
 public class Cliente {
 	final private String backEndIp;
 
 	private InetAddress ip = null;
 	private String mensagem = null;
-	private String resposta = null;
+	private Mensagem resposta = null;
+	Socket socket = null;
+	BufferedReader input = null;
+	PrintStream output = null;
 
-	public Cliente(String backEndIp) {
+	public Cliente(final String backEndIp) {
 		this.backEndIp = backEndIp;
 
 		try {
@@ -32,29 +34,39 @@ public class Cliente {
 			e.printStackTrace();
 		}
 
+		int port = 6500;
+		String resposta, line;
+
+		try {
+			socket = new Socket(backEndIp, port);
+			input = new BufferedReader(new InputStreamReader(socket
+					.getInputStream()));
+			output = new PrintStream(socket.getOutputStream(), true);
+
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		Thread t = new Thread() {
 			@Override
 			public void run() {
-				DatagramSocket datagramSocket = null;
-				DatagramPacket inPacket;
-				byte[] buffer;
-				int PORT = 9013;
 
-				try {
-					while (true) {
-						datagramSocket = new DatagramSocket(PORT);
-						datagramSocket.setBroadcast(true);
-						buffer = new byte[256];
-						inPacket = new DatagramPacket(buffer, buffer.length);
-						datagramSocket.receive(inPacket);
-						String mensagem = new String(inPacket.getData(), 0,
-								inPacket.getLength());
-						System.out.println("Admin disse: " + mensagem);
-						datagramSocket.close();
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				/*
+				 * 
+				 * DatagramSocket datagramSocket = null; DatagramPacket
+				 * inPacket; byte[] buffer; int PORT = 9013;
+				 * 
+				 * try { while (true) { datagramSocket = new
+				 * DatagramSocket(PORT); datagramSocket.setBroadcast(true);
+				 * buffer = new byte[256]; inPacket = new DatagramPacket(buffer,
+				 * buffer.length); datagramSocket.receive(inPacket); String
+				 * mensagem = new String(inPacket.getData(), 0,
+				 * inPacket.getLength()); System.out.println("Admin disse: " +
+				 * mensagem); datagramSocket.close(); } } catch (Exception e) {
+				 * e.printStackTrace(); }
+				 */
 			}
 		};
 
@@ -73,9 +85,9 @@ public class Cliente {
 		System.out.println("4  - Listar votantes on-line");
 		System.out.println("5  - Enviar mensagem a um votante");
 		System.out.println("6  - Enviar mensagem a todos os votantes");
-		System.out.println("7  - lista branca de votantes");
+		System.out.println("7  - Lista branca de votantes");
 		System.out.println("8  - Adicionar votante a lista branca");
-		System.out.println("9  - lista negra de votantes");
+		System.out.println("9  - Lista negra de votantes");
 		System.out.println("10 - Adicionar votante a lista negra");
 		System.out.println("11 - Desconectar votante");
 		System.out.println("12 - Tempo restante de votação");
@@ -91,19 +103,20 @@ public class Cliente {
 		Scanner teclado = new Scanner(System.in);
 		int opcao = 0;
 		try {
-
-			System.out.println("Opção? ");
-			opcao = teclado.nextInt();
 			while (true) {
+				System.out.println("Opção? ");
+				opcao = teclado.nextInt();
+
 				switch (opcao) {
 				case 0:
 					desenhaMenuClienteAdmin();
 					break;
 				case 1:
-					mensagem = GestorMensagem.getListaItens(ip);
-					resposta = enviarMensagemTcp(mensagem);
+					// mensagem = GestorMensagem.getListaItens(ip);
+					// resposta = enviarMensagemTcp(mensagem);
 
-					final Mensagem msg = Descodificador.descodificar(resposta);
+					// final Mensagem msg =
+					// Descodificador.descodificar(resposta);
 
 					// fazer qq de util
 
@@ -119,6 +132,16 @@ public class Cliente {
 				case 6:
 					break;
 				case 7:
+					mensagem = ConstrutorMensagens.obterListaBranca(ip
+							.getHostAddress());
+					resposta = enviarMensagemTcp(mensagem);
+
+					System.out.println(resposta.getTipoMensagem().ordinal()
+							+ "|" + resposta.getIp() + "|"
+							+ resposta.getAccao().ordinal() + "|"
+							+ resposta.getAlvo().ordinal() + "|"
+							+ resposta.getTexto());
+
 					break;
 				case 8:
 					break;
@@ -271,22 +294,24 @@ public class Cliente {
 		}
 	}
 
-	public String enviarMensagemTcp(String cmd) throws IOException {
+	public Mensagem enviarMensagemTcp(final String msg) throws IOException {
+		output.println(msg);
 
-		String host = backEndIp;
-		int port = 6500;
-		String line;
-		Socket socket = new Socket(host, port);
-		BufferedReader input = new BufferedReader(new InputStreamReader(socket
-				.getInputStream()));
-		PrintStream output = new PrintStream(socket.getOutputStream(), true);
-		output.println(cmd); // envia comando ao servidor
-		line = input.readLine();// resposta do servidor
-		input.close();// termina input
-		output.close();// termina output
-		socket.close();// termina socket
+		return Descodificador.descodificar(input.readLine());
 
-		return line;
+		/*
+		 * String host = backEndIp; int port = 6500; String line; Socket socket
+		 * = new Socket(host, port); BufferedReader input = new
+		 * BufferedReader(new InputStreamReader(socket .getInputStream()));
+		 * PrintStream output = new PrintStream(socket.getOutputStream(), true);
+		 * output.println(cmd); // envia alvo ao servidor line =
+		 * input.readLine();// resposta do servidor input.close();// termina
+		 * input output.close();// termina output socket.close();// termina
+		 * socket
+		 * 
+		 * return line;
+		 */
+
 	}
 
 	public void enviarMensagemUdp(String ip, String msg) {
