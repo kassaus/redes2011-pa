@@ -9,7 +9,9 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.StringTokenizer;
 
 import mensagens.Mensagem;
 import mensagens.util.Descodificador;
@@ -112,52 +114,160 @@ public class Cliente {
 					desenhaMenuClienteAdmin();
 					break;
 				case 1:
-					// mensagem = GestorMensagem.getListaItens(ip);
-					// resposta = enviarMensagemTcp(mensagem);
-
-					// final Mensagem msg =
-					// Descodificador.descodificar(resposta);
-
-					// fazer qq de util
+					mostraListaVotacao();
 
 					break;
 				case 2:
+					// Adicionar item de votação
+					mostraListaVotacao();
+
+					System.out.println("Insira a nova sigla: ");
+					teclado.nextLine();
+					final String sigla = teclado.nextLine();
+
+					System.out.println("Insira a nova descricao: ");
+					final String descricao = teclado.nextLine();
+
+					mensagem = ConstrutorMensagens.adicionarItem(sigla,
+							descricao, ip.getHostAddress());
+					resposta = enviarMensagemTcp(mensagem);
+
+					System.out.println(resposta.getTexto());
+
 					break;
 				case 3:
+					// Remover item de votação
+					mostraListaVotacao();
+					Integer index = null;
+					System.out.println("Insira o numero do item a remover: ");
+					teclado.nextLine();
+
+					while (index == null) {
+						try {
+							index = teclado.nextInt();
+						} catch (InputMismatchException e) {
+							index = null;
+							System.out
+									.println("O número que introduziu é inválido.\n");
+							System.out
+									.println("Insira de novo o numero do item a remover: ");
+						}
+					}
+					System.out.println("Confirma a remoção do item  " + index
+							+ "? s/n");
+					String escolha = "";
+					escolha = teclado.next();
+					while (escolha.equalsIgnoreCase("S")
+							&& escolha.equalsIgnoreCase("N")) {
+						System.out.println("Confirme a opção, escrevendo s/n.");
+						System.out.println("Confirma a remoção do item  "
+								+ index + "? s/n");
+						escolha = teclado.next();
+					}
+					if (escolha.equalsIgnoreCase("N")) {
+						break;
+					}
+
+					mensagem = ConstrutorMensagens.removerItemLista(index
+							.toString(), ip.getHostAddress());
+					resposta = enviarMensagemTcp(mensagem);
+
+					System.out.println(resposta.getTexto());
+
 					break;
 				case 4:
+					mensagem = ConstrutorMensagens.obterListaVotantes(ip
+							.getHostAddress());
+					resposta = enviarMensagemTcp(mensagem);
+					System.out.println("Lista Votantes on-line:");
+					listar(resposta.getTexto());
+
 					break;
 				case 5:
 					break;
 				case 6:
 					break;
 				case 7:
+					// Lista branca de votantes
 					mensagem = ConstrutorMensagens.obterListaBranca(ip
 							.getHostAddress());
 					resposta = enviarMensagemTcp(mensagem);
-
-					System.out.println(resposta.getTipoMensagem().ordinal()
-							+ "|" + resposta.getIp() + "|"
-							+ resposta.getAccao().ordinal() + "|"
-							+ resposta.getAlvo().ordinal() + "|"
-							+ resposta.getTexto());
+					System.out.println("Lista Branca:");
+					listar(resposta.getTexto());
+					/*
+					 * System.out.println(resposta.getTipoMensagem().ordinal() +
+					 * "|" + resposta.getIp() + "|" +
+					 * resposta.getAccao().ordinal() + "|" +
+					 * resposta.getAlvo().ordinal() + "|" +
+					 * resposta.getTexto());
+					 */
 
 					break;
 				case 8:
+					// Adicionar votante a lista branca
+					System.out.println("Insira 0 IP do votante:");
+					teclado.nextLine();
+					final String ipVotante = teclado.nextLine();
+					mensagem = ConstrutorMensagens.adicionarVotanteBranca(ip
+							.getHostAddress(), ipVotante);
+					resposta = enviarMensagemTcp(mensagem);
+					System.out.println(resposta.getTexto());
+
 					break;
 				case 9:
+					// Lista negra de votantes
+					mensagem = ConstrutorMensagens.obterListaNegra(ip
+							.getHostAddress());
+					resposta = enviarMensagemTcp(mensagem);
+
+					System.out.println("Lista Negra:");
+					listar(resposta.getTexto());
+
 					break;
 				case 10:
+					// Adicionar votante a lista negra
+					System.out.println("Insira o IP do votante:");
+					teclado.nextLine();
+					final String ipVotanteNegra = teclado.nextLine();
+					mensagem = ConstrutorMensagens.adicionarVotanteNegra(ip
+							.getHostAddress(), ipVotanteNegra);
+					resposta = enviarMensagemTcp(mensagem);
+					System.out.println(resposta.getTexto());
 					break;
 				case 11:
 					break;
 				case 12:
+					// Tempo restante de votação
+					mensagem = ConstrutorMensagens.tempoRestanteVotacao(ip
+							.getHostAddress());
+					resposta = enviarMensagemTcp(mensagem);
+					System.out.println(resposta.getTexto());
 					break;
 				case 13:
+					// Numero total de votos
+					mensagem = ConstrutorMensagens.numeroTotalVotos(ip
+							.getHostAddress());
+					resposta = enviarMensagemTcp(mensagem);
+					System.out.println("Total de votos");
+					System.out.println(resposta.getTexto());
 					break;
 				case 14:
+					mensagem = ConstrutorMensagens.obterListaVotos(ip
+							.getHostAddress());
+					resposta = enviarMensagemTcp(mensagem);
+					System.out.println("Lista Resultados:");
+					final StringTokenizer tok = new StringTokenizer(resposta
+							.getTexto(), ";");
+					while (tok.hasMoreTokens()) {
+						System.out.println(tok.nextToken());
+					}
+
 					break;
 				case 15:
+					mensagem = ConstrutorMensagens.obterItemVencedor(ip
+							.getHostAddress());
+					resposta = enviarMensagemTcp(mensagem);
+
 					break;
 				case 99:
 					break;
@@ -176,6 +286,26 @@ public class Cliente {
 			teclado.nextLine();
 			desenhaMenuClienteAdmin();
 		}
+	}
+
+	private void mostraListaVotacao() throws IOException {
+		mensagem = ConstrutorMensagens.obterItensVotacao(ip.getHostAddress());
+		resposta = enviarMensagemTcp(mensagem);
+		System.out.println("Lista de Votação:");
+		listar(resposta.getTexto());
+	}
+
+	private void listar(final String texto) {
+		final StringTokenizer tok = new StringTokenizer(texto, ";");
+
+		if (tok.countTokens() == 1) {
+			System.out.println(texto);
+		} else {
+			for (int i = 0; tok.hasMoreTokens(); i++) {
+				System.out.println(i + " - " + tok.nextToken());
+			}
+		}
+
 	}
 
 	public void desenhaMenuClienteVotante() {
