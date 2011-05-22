@@ -66,13 +66,31 @@ public class Main {
 								if (msg.getAlvo() != null) {
 									switch (msg.getAlvo()) {
 									case LISTA_BRANCA:
+										resposta = Gestor
+												.adicionarVotanteBranca(msg);
+										strResposta = Codificador
+												.codificar(resposta);
+
+										output.println(strResposta);
 
 										break;
 									case LISTA_NEGRA:
+										resposta = Gestor
+												.adicionarVotanteNegra(msg);
+										strResposta = Codificador
+												.codificar(resposta);
+
+										output.println(strResposta);
 
 										break;
 
 									case LISTA_VOTACAO:
+										resposta = Gestor
+												.adicionarItemListaVotacao(msg);
+										strResposta = Codificador
+												.codificar(resposta);
+
+										output.println(strResposta);
 
 										break;
 
@@ -97,18 +115,36 @@ public class Main {
 
 										break;
 									case LISTA_NEGRA:
+										resposta = Gestor.listarListaNegra(msg);
+										strResposta = Codificador
+												.codificar(resposta);
+										output.println(strResposta);
 
 										break;
 
 									case LISTA_VOTACAO:
+										resposta = Gestor
+												.listarItensVotacao(msg);
+										strResposta = Codificador
+												.codificar(resposta);
+										output.println(strResposta);
 
 										break;
 
 									case LISTA_ONLINE:
+										resposta = Gestor
+												.listarListaVotantes(msg);
+										strResposta = Codificador
+												.codificar(resposta);
+										output.println(strResposta);
 
 										break;
 
 									case LISTA_RESULTADOS:
+										resposta = Gestor.listarListaVotos(msg);
+										strResposta = Codificador
+												.codificar(resposta);
+										output.println(strResposta);
 
 										break;
 
@@ -123,6 +159,11 @@ public class Main {
 								if (msg.getAlvo() != null) {
 									switch (msg.getAlvo()) {
 									case LISTA_VOTACAO:
+										resposta = Gestor
+												.removerItemListaVotacao(msg);
+										strResposta = Codificador
+												.codificar(resposta);
+										output.println(strResposta);
 
 										break;
 
@@ -145,12 +186,21 @@ public class Main {
 						if (msg.getAccao() != null) {
 							switch (msg.getAccao()) {
 							case TMP_RESTANTE:
+								resposta = Gestor.tempoRestante(msg);
+								strResposta = Codificador.codificar(resposta);
+								output.println(strResposta);
 
 								break;
 							case TOTAL:
+								resposta = Gestor.totalVotos(msg);
+								strResposta = Codificador.codificar(resposta);
+								output.println(strResposta);
 
 								break;
 							case VENCEDOR:
+								resposta = Gestor.itemVencedor(msg);
+								strResposta = Codificador.codificar(resposta);
+								output.println(strResposta);
 
 								break;
 
