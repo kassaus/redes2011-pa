@@ -12,7 +12,9 @@ public class Mensagem {
 	private String texto;
 
 	public Mensagem() {
-
+		tipoMensagem = TipoMensagem.INVALIDO;
+		alvo = Alvo.INVALIDO;
+		accao = Accao.INVALIDO;
 	}
 
 	public Mensagem(final Mensagem mensagem) {
