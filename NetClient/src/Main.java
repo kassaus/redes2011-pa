@@ -1,18 +1,38 @@
 import entidades.Cliente;
+import gestor.Gestor;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class Main {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		if (args.length != 1) {
-			System.err.println("usage: java EchoClient2 <host>");
-			System.exit(1);
-		}
-		Cliente cliente = new Cliente(args[0]);
-		cliente.desenhaMenuClienteAdmin();
+    private static String ip = null;
 
-	}
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.err.println("usage: java EchoClient2 <host>");
+            System.exit(1);
+        }
+        ip = args[0];
+        Gestor.getListaAdmin();
+        Cliente cliente = new Cliente(ip);
+
+        if (isAdmin()) {
+            cliente.desenhaMenuClienteAdmin();
+        } else {
+            cliente.desenhaMenuClienteVotante();
+        }
+    }
+
+    private static Boolean isAdmin() {
+        try {
+            return Gestor.getListaAdmin().contains(InetAddress.getByName(ip).getHostAddress());
+        } catch (UnknownHostException e) {
+            return false;
+        }
+    }
 
 }
