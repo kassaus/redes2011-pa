@@ -25,7 +25,7 @@ public class Mensagem {
 		texto = mensagem.getTexto();
 	}
 
-	public Mensagem(int tipoMensagem, String ip, int alvo, int accao,
+	public Mensagem(int tipoMensagem, String ip, int accao, int alvo,
 			String texto) {
 		this.ip = ip;
 		this.tipoMensagem = TipoMensagem.getLabel(tipoMensagem);
