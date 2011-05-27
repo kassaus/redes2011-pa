@@ -19,6 +19,11 @@ import mensagens.util.Descodificador;
 public class Main {
 
     private static HashMap<String, Socket> threads;
+    
+    public int TCP_SERVER_PORT = 6500;
+    public int UDP_UNICAST_PORT = 6501;
+    public int UDP_MULTICAST_PORT = 6502;
+ //   public int UDP_MULTICAST_____
 
     /**
      * @param args
@@ -28,8 +33,8 @@ public class Main {
         threads = new HashMap<String, Socket>();
 
         // criar socket na porta 6500
-        ServerSocket server = new ServerSocket(6500);
-        System.out.println("servidor iniciado na porta 6500");
+        ServerSocket server = new ServerSocket(TCP_SERVER_PORT);
+        System.out.println("servidor iniciado na porta " + TCP_SERVER_PORT);
         while (true) {// aguarda clientes
             Socket socket = null;
             socket = server.accept();
