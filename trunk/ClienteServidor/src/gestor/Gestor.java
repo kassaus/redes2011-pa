@@ -1,6 +1,7 @@
 package gestor;
 
 import enumerados.Accao;
+import enumerados.Alvo;
 import enumerados.Erro;
 import enumerados.Sucesso;
 import enumerados.TipoMensagem;
@@ -9,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -20,30 +23,34 @@ import java.util.StringTokenizer;
 import main.Main;
 import mensagens.Mensagem;
 
-public abstract class Gestor {
+public class Gestor {
 
     private static final String RESOURCES_PATH = "resources/";
-
     private static final String ADMIN_FILE = RESOURCES_PATH + "admin.dat";
     private static final String LISTA_BRANCA_FILE = RESOURCES_PATH + "listaBranca.dat";
     private static final String LISTA_NEGRA_FILE = RESOURCES_PATH + "listaNegra.dat";
     private static final String LISTA_ITEMS_VOTACAO = RESOURCES_PATH + "listaItemsVotacao.dat";
     private static final String LISTA_VOTANTES = RESOURCES_PATH + "listaVotantes.dat";
     private static final String LISTA_VOTOS = RESOURCES_PATH + "votos.dat";
+    private static final String VOTACAO = RESOURCES_PATH + "votacao.dat";;
 
-    static List<String> listaAdmin = null;
-    static List<String> listaBranca = null;
-    static List<String> listaNegra = null;
-    static List<String> listaVotantes = null;
-    static List<String> listaVotos = null;
-    static HashMap<String, String> itensVotacao = null;
-    static List<String> siglas = null;
+    private List<String> listaAdmin = null;
+    private List<String> listaBranca = null;
+    private List<String> listaNegra = null;
+    private List<String> listaVotantes = null;
+    private List<String> listaVotos = null;
+    private HashMap<String, String> itensVotacao = null;
+    private List<String> siglas = null;
 
-    static Calendar dataInicio = null;
-    static Calendar dataFim = null;
-    static Integer duracaoVotacao = null;
+    private Calendar dataInicio = null;
+    private Calendar dataFim = null;
+    private Integer duracaoVotacao = null;
 
-    static {
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+    private static Gestor instance = null;
+
+    private Gestor() {
         listaAdmin = new ArrayList<String>();
         listaAdmin.addAll((readFileToList(Gestor.class.getClassLoader().getResource(ADMIN_FILE).getPath())));
         listaBranca = new ArrayList<String>();
@@ -57,14 +64,14 @@ public abstract class Gestor {
         listaVotos.addAll(readFileToList(Gestor.class.getClassLoader().getResource(LISTA_VOTOS).getPath()));
         itensVotacao = new HashMap<String, String>();
         itensVotacao.putAll(readFileToMap(Gestor.class.getClassLoader().getResource(LISTA_ITEMS_VOTACAO).getPath()));
-
         actualizaListaSiglas();
+        readDateFile(Gestor.class.getClassLoader().getResource(VOTACAO).getPath());
 
         // final String sigla = siglas.get(2);
         // final String descricao = itensVotacao.get(sigla);
     }
 
-    private static ArrayList<String> readFileToList(String ficheiro) {
+    private ArrayList<String> readFileToList(String ficheiro) {
         ArrayList<String> dados = new ArrayList<String>();
         String linha;
         try {
@@ -80,7 +87,47 @@ public abstract class Gestor {
         return dados;
     }
 
-    private static HashMap<String, String> readFileToMap(String ficheiro) {
+    private void readDateFile(String ficheiro) {
+        String strDadosFile;
+
+        try {
+            FileReader leitor = new FileReader(ficheiro);
+            BufferedReader in = new BufferedReader(leitor);
+
+            try {
+                strDadosFile = in.readLine();
+                if (strDadosFile != null && !strDadosFile.isEmpty()) {
+                    dataInicio = Calendar.getInstance();
+                    dataInicio.setTime(dateFormat.parse(strDadosFile));
+                }
+            } catch (ParseException e) {
+                dataInicio = null;
+            }
+
+            try {
+                strDadosFile = in.readLine();
+                if (strDadosFile != null && !strDadosFile.isEmpty()) {
+                    duracaoVotacao = Integer.parseInt(strDadosFile);
+                }
+            } catch (NumberFormatException e) {
+            }
+
+            try {
+                strDadosFile = in.readLine();
+                if (strDadosFile != null && !strDadosFile.isEmpty()) {
+                    dataFim = Calendar.getInstance();
+                    dataFim.setTime(dateFormat.parse(strDadosFile));
+                }
+            } catch (ParseException e) {
+                dataFim = null;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private HashMap<String, String> readFileToMap(String ficheiro) {
         HashMap<String, String> dados = new HashMap<String, String>();
         String linha;
         try {
@@ -98,7 +145,7 @@ public abstract class Gestor {
         return dados;
     }
 
-    public static Mensagem listarListaBranca(final Mensagem msg) {
+    public Mensagem listarListaBranca(final Mensagem msg) {
         final Mensagem mensagem = new Mensagem(msg);
 
         StringBuilder texto = new StringBuilder();
@@ -116,7 +163,7 @@ public abstract class Gestor {
 
     }
 
-    public static Mensagem listarListaNegra(final Mensagem msg) {
+    public Mensagem listarListaNegra(final Mensagem msg) {
         final Mensagem mensagem = new Mensagem(msg);
         StringBuilder texto = new StringBuilder();
         try {
@@ -133,7 +180,7 @@ public abstract class Gestor {
 
     }
 
-    public static Mensagem listarListaVotantesOnline(final Mensagem msg) {
+    public Mensagem listarListaVotantesOnline(final Mensagem msg) {
         final Mensagem mensagem = new Mensagem(msg);
         StringBuilder texto = new StringBuilder();
         for (String ip : Main.listaVotantesOnline()) {
@@ -146,7 +193,7 @@ public abstract class Gestor {
 
     }
 
-    public static Mensagem listarListaVotos(final Mensagem msg) {
+    public Mensagem listarListaVotos(final Mensagem msg) {
         final Mensagem mensagem = new Mensagem(msg);
         StringBuilder texto = new StringBuilder();
         for (int i = 0; i < resultadosVotacao().size(); i++) {
@@ -160,7 +207,7 @@ public abstract class Gestor {
 
     }
 
-    public static Mensagem listarItensVotacao(final Mensagem msg) {
+    public Mensagem listarItensVotacao(final Mensagem msg) {
         final Mensagem mensagem = new Mensagem(msg);
         StringBuilder texto = new StringBuilder();
 
@@ -176,20 +223,29 @@ public abstract class Gestor {
 
     }
 
-    public static Mensagem adicionarItemListaVotacao(final Mensagem msg) {
-        final Mensagem mensagem = new Mensagem();
+    public Mensagem adicionarItemListaVotacao(final Mensagem msg) {
+        final Mensagem mensagem = new Mensagem(msg);
         mensagem.setTipoMensagem(TipoMensagem.INFORMACAO);
-        mensagem.setIp(msg.getIp());
         final StringTokenizer tok = new StringTokenizer(msg.getTexto(), "§");
         try {
-            final String sigla = tok.nextToken();
-            final String descricao = tok.nextToken();
-            itensVotacao.put(sigla, descricao);
-            actualizaListaSiglas();
-            listaVotos.add("0");
-            Collections.fill(listaVotos, "0");
+            if (dataFim == null) {
+                final String sigla = tok.nextToken();
+                final String descricao = tok.nextToken();
+                if (!sigla.contains(sigla)) {
+                    itensVotacao.put(sigla, descricao);
+                    actualizaListaSiglas();
+                    listaVotos.add("0");
+                    Collections.fill(listaVotos, "0");
 
-            mensagem.setTexto(Sucesso.OK.getMensagem() + ": " + Sucesso.ADICIONAR.getMensagem());
+                    mensagem.setTexto(Sucesso.OK.getMensagem() + ": " + Sucesso.ADICIONAR.getMensagem());
+                } else {
+                    mensagem.setTexto("Erro: " + Erro.ITEM_EXISTENTE.getCodigo() + ": "
+                            + Erro.ITEM_EXISTENTE.getMensagem());
+                }
+            } else {
+                mensagem
+                        .setTexto("Erro: " + Erro.VOTACAO_ACTIVA.getCodigo() + ": " + Erro.VOTACAO_ACTIVA.getMensagem());
+            }
         } catch (IndexOutOfBoundsException ex) {
             mensagem.setTexto(Erro.ADICIONAR.getCodigo() + ": " + Erro.ADICIONAR.getMensagem());
         }
@@ -197,7 +253,7 @@ public abstract class Gestor {
         return mensagem;
     }
 
-    public static Mensagem removerItemListaVotacao(final Mensagem msg) {
+    public Mensagem removerItemListaVotacao(final Mensagem msg) {
         final Mensagem mensagem = new Mensagem();
         mensagem.setTipoMensagem(TipoMensagem.INFORMACAO);
         mensagem.setIp(msg.getIp());
@@ -208,12 +264,17 @@ public abstract class Gestor {
         sigla = siglas.get(indice);
 
         try {
-            itensVotacao.remove(sigla);
-            actualizaListaSiglas();
-            listaVotos.remove(indice);
-            Collections.fill(listaVotos, "0");
+            if (dataFim == null) {
+                itensVotacao.remove(sigla);
+                actualizaListaSiglas();
+                listaVotos.remove(indice);
+                Collections.fill(listaVotos, "0");
 
-            mensagem.setTexto(Sucesso.OK.getMensagem() + ": " + Sucesso.REMOVER.getMensagem());
+                mensagem.setTexto(Sucesso.OK.getMensagem() + ": " + Sucesso.REMOVER.getMensagem());
+            } else {
+                mensagem
+                        .setTexto("Erro: " + Erro.VOTACAO_ACTIVA.getCodigo() + ": " + Erro.VOTACAO_ACTIVA.getMensagem());
+            }
         } catch (IndexOutOfBoundsException ex) {
             mensagem.setTexto(Erro.REMOVER.getCodigo() + ": " + Erro.REMOVER.getMensagem());
         }
@@ -221,12 +282,12 @@ public abstract class Gestor {
         return mensagem;
     }
 
-    private static void actualizaListaSiglas() {
+    private void actualizaListaSiglas() {
         // Actualiza a lista de siglas com as Keys da HasMap.
         siglas = Arrays.asList(itensVotacao.keySet().toArray(new String[0]));
     }
 
-    public static Mensagem itemVencedor(final Mensagem msg) {
+    public Mensagem itemVencedor(final Mensagem msg) {
         final Mensagem mensagem = new Mensagem(msg);
 
         try {
@@ -242,114 +303,150 @@ public abstract class Gestor {
 
     }
 
-    public static Mensagem adicionarVotanteBranca(Mensagem msg) {
+    public Mensagem adicionarVotanteBranca(Mensagem msg) {
         final Mensagem mensagem = new Mensagem();
         mensagem.setIp(msg.getIp());
         try {
-            listaBranca.add(msg.getTexto());
-            mensagem.setTexto(Sucesso.OK.getMensagem() + ":" + msg.getTexto() + " " + Sucesso.ADICIONAR.getMensagem());
-        } catch (Exception ex) {
+            if (validaIp(msg.getTexto()) && listaNegra.contains(msg.getTexto())) {
+                listaNegra.remove(msg.getIp());
+            }
 
-            mensagem.setTexto(Erro.ADICIONAR.getCodigo() + ": " + Erro.ADICIONAR.getMensagem());
+            if (validaIp(msg.getTexto()) && !listaBranca.contains(msg.getTexto())) {
+                listaBranca.add(msg.getTexto());
+                mensagem.setTexto(Sucesso.OK.getMensagem() + ":" + msg.getTexto() + " "
+                        + Sucesso.ADICIONAR.getMensagem());
+            } else {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException ex) {
+            mensagem.setTexto("Erro: " + Erro.IP_INVALIDO.getCodigo() + " '" + msg.getTexto() + "' - "
+                    + Erro.IP_INVALIDO.getMensagem());
+        }
 
+        return mensagem;
+    }
+
+    public Mensagem adicionarVotanteNegra(Mensagem msg) {
+        final Mensagem mensagem = new Mensagem();
+        mensagem.setIp(msg.getIp());
+        try {
+            if (validaIp(msg.getTexto())) {
+                if (!listaNegra.contains(msg.getTexto())) {
+                    listaNegra.add(msg.getTexto());
+                }
+
+                mensagem.setTexto(Sucesso.OK.getMensagem() + " '" + msg.getTexto() + "' - "
+                        + Sucesso.ADICIONAR.getMensagem());
+            } else {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException ex) {
+            mensagem.setTexto("Erro: " + Erro.IP_INVALIDO.getCodigo() + " '" + msg.getTexto() + "' - "
+                    + Erro.IP_INVALIDO.getMensagem());
         }
         return mensagem;
     }
 
-    public static Mensagem adicionarVotanteNegra(Mensagem msg) {
-        final Mensagem mensagem = new Mensagem();
-        mensagem.setIp(msg.getIp());
-        try {
-            listaNegra.add(msg.getTexto());
-            mensagem.setTexto(Sucesso.OK.getMensagem() + ":" + msg.getTexto() + " " + Sucesso.ADICIONAR.getMensagem());
-        } catch (Exception ex) {
-
-            mensagem.setTexto(Erro.ADICIONAR.getCodigo() + ": " + Erro.ADICIONAR.getMensagem());
-
-        }
-        return mensagem;
-    }
-
-    public static Mensagem tempoRestante(Mensagem msg) {
+    public Mensagem tempoRestante(Mensagem msg) {
         final Mensagem mensagem = new Mensagem(msg);
 
         if (dataFim != null) {
             long tempRestante = dataFim.getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
             int segundos = (int) (tempRestante / 1000) % 60;
-            int minutos = (int) ((tempRestante / 1000) / 60);
             int horas = (int) ((tempRestante / 1000) / 3600);
+            int minutos = (int) ((tempRestante / 1000) / 60) - horas * 60;
+
             mensagem.setTexto(horas + " h " + minutos + " m " + segundos + " s");
 
         } else {
             mensagem.setTipoMensagem(TipoMensagem.INFORMACAO);
             mensagem.setAccao(Accao.TMP_RESTANTE);
-            mensagem.setTexto(Erro.TEMPO_VOTACAO.getCodigo() + " " + Erro.TEMPO_VOTACAO.getMensagem());
+            mensagem.setTexto("Erro: " + Erro.TEMPO_VOTACAO.getCodigo() + " " + Erro.TEMPO_VOTACAO.getMensagem());
         }
         return mensagem;
     }
 
-    public static Mensagem totalVotos(Mensagem msg) {
+    public Mensagem totalVotos(Mensagem msg) {
         final Mensagem mensagem = new Mensagem(msg);
         mensagem.setTexto(String.valueOf(listaVotantes.size()));
 
         return mensagem;
     }
 
-    public static Mensagem sair(Mensagem msg) {
+    public Mensagem sair(Mensagem msg) {
         final Mensagem mensagem = new Mensagem(msg);
-        mensagem.setTexto(Sucesso.OK.getMensagem() + " A sair.");
+        mensagem.setTexto(Sucesso.OK.getMensagem() + " - A sair. ");
         return mensagem;
     }
 
-    public static Mensagem desconectar(Mensagem msg) {
+    public Mensagem desconectar(Mensagem msg) {
         final Mensagem mensagem = new Mensagem(msg);
-        mensagem.setTexto(Sucesso.DESCONECTAR.getMensagem() + Sucesso.OK.getMensagem());
-        return mensagem;
-    }
-
-    public static Mensagem votar(Mensagem msg) {
-        final Mensagem mensagem = new Mensagem();
         mensagem.setTipoMensagem(TipoMensagem.INFORMACAO);
-        mensagem.setIp(msg.getIp());
+        mensagem.setAlvo(Alvo.OK);
+        mensagem.setTexto(Sucesso.OK.getMensagem() + " - " + Sucesso.DESCONECTAR.getMensagem());
+        return mensagem;
+    }
 
-        if (!listaVotantes.contains(msg.getIp())) {
-            final int index = Integer.parseInt(msg.getTexto());
-            mensagem.setTexto(Sucesso.OK + ": Voto efectuado no " + siglas.get(index));
-            listaVotantes.add(msg.getIp());
-            listaVotos.set(index, Integer.toString(Integer.parseInt(listaVotos.get(index)) + 1));
+    public Mensagem votar(Mensagem msg) {
+        final Mensagem mensagem = new Mensagem(msg);
+        mensagem.setTipoMensagem(TipoMensagem.INFORMACAO);
+        if (dataFim == null) {
+            mensagem.setTexto("Erro " + Erro.VOTACAO_INDISPONIVEL.getCodigo() + ": "
+                    + Erro.VOTACAO_INDISPONIVEL.getMensagem());
+            return mensagem;
+        }
+
+        if ((listaBranca.isEmpty() || listaBranca.contains(msg.getIp())) && !listaNegra.contains(msg.getIp())) {
+            if (!listaVotantes.contains(msg.getIp())) {
+                final int index = Integer.parseInt(msg.getTexto());
+                mensagem.setTexto(Sucesso.OK.getMensagem() + ": Voto efectuado no " + siglas.get(index));
+                listaVotantes.add(msg.getIp());
+                listaVotos.set(index, Integer.toString(Integer.parseInt(listaVotos.get(index)) + 1));
+            } else {
+                mensagem.setTexto("Erro " + Erro.VOTAR.getCodigo() + ": " + Erro.VOTAR.getMensagem());
+            }
         } else {
-            mensagem.setTexto("Erro " + Erro.VOTAR.getCodigo() + ": " + Erro.VOTAR.getMensagem());
+            mensagem.setTexto("Erro " + Erro.VOTANTE_LISTA_NEGRA.getCodigo() + ": "
+                    + Erro.VOTANTE_LISTA_NEGRA.getMensagem());
         }
 
         return mensagem;
     }
 
-    public static Mensagem duracaoVotacao(Mensagem msg) {
+    public Mensagem duracaoVotacao(Mensagem msg) {
         final Mensagem mensagem = new Mensagem();
+
         if (dataFim == null || dataFim.getTimeInMillis() < System.currentTimeMillis()) {
             duracaoVotacao = Integer.parseInt(msg.getTexto());
             mensagem.setTipoMensagem(TipoMensagem.INFORMACAO);
             mensagem.setIp(msg.getIp());
             mensagem.setTexto(Sucesso.OK.getMensagem() + ": " + Sucesso.DEFINIR.getMensagem());
+
         } else {
-            mensagem.setTexto("Erro " + Erro.TEMPO_VOTACAO.getCodigo() + ":" + Erro.TEMPO_VOTACAO.getMensagem());
+            mensagem.setTexto("Erro " + Erro.VOTACAO_ACTIVA.getCodigo() + ":" + Erro.VOTACAO_ACTIVA.getMensagem());
         }
 
         return mensagem;
     }
 
-    public static void iniciarVotacao() {
+    public Mensagem iniciarVotacao(Mensagem msg) {
+        final Mensagem mensagem = new Mensagem();
+        mensagem.setIp(msg.getIp());
+        mensagem.setTipoMensagem(TipoMensagem.INFORMACAO);
         if (duracaoVotacao != null) {
             dataInicio = Calendar.getInstance();
             dataFim = (Calendar) dataInicio.clone();
             dataFim.add(Calendar.MINUTE, duracaoVotacao);
+            mensagem.setTexto(Sucesso.OK.getMensagem() + ": " + Sucesso.INICIAR_VOTACAO.getMensagem());
         } else {
 
+            mensagem.setTexto("Erro " + Erro.TEMPO_DURACAO.getCodigo() + ":" + Erro.TEMPO_DURACAO.getMensagem());
         }
 
+        return mensagem;
     }
 
-    public static List<String> resultadosVotacao() {
+    public List<String> resultadosVotacao() {
         List<String> percentagens = new ArrayList<String>();
         double valorPercentagem = 0;
         DecimalFormat decimalFormato = new DecimalFormat("##.#");
@@ -362,21 +459,37 @@ public abstract class Gestor {
         return percentagens;
     }
 
-    public static String itemVencedor() {
+    public String itemVencedor() {
         return Collections.max(listaVotos);
     }
 
-    public static final List<String> getListaAdmin() {
+    public final List<String> getListaAdmin() {
         return listaAdmin;
     }
 
-    public static void imprimeLista(List<Object> lista) {
+    public void imprimeLista(List<Object> lista) {
         for (Object item : lista) {
             System.out.println((String) item);
         }
     }
 
-    public static void imprimeListaTodas() {
+    public boolean validaIp(String ip) {
+        String[] partes = ip.split("\\.");
+
+        if (partes.length != 4) {
+            return false;
+        }
+
+        for (String str : partes) {
+            int i = Integer.parseInt(str);
+            if (i < 0 || i > 255) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void imprimeListaTodas() {
         System.out.println("*********Lista Admin*******");
         for (String item : listaAdmin) {
             System.out.println(item);
@@ -411,13 +524,21 @@ public abstract class Gestor {
         System.out.println(itemVencedor());
     }
 
-    public static List<String> listarListaVotantes() {
+    public List<String> listarListaVotantes() {
         return listaVotantes;
 
     }
 
-    public static final Integer getDuracaoVotacao() {
+    public Integer getDuracaoVotacao() {
         return duracaoVotacao;
+    }
+
+    public final static Gestor getInstance() {
+        if (instance == null) {
+            instance = new Gestor();
+        }
+
+        return instance;
     }
 
 }
