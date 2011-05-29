@@ -1,7 +1,5 @@
 package entidades;
 
-import gestor.Gestor;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,8 +16,12 @@ import java.util.StringTokenizer;
 import mensagens.Mensagem;
 import mensagens.util.Descodificador;
 import util.ConstrutorMensagens;
+import enumerados.Alvo;
+import gestor.Gestor;
 
 public class Cliente {
+
+    private static final Gestor GESTOR = Gestor.getInstance();
 
     final private String backEndIp;
 
@@ -40,8 +42,6 @@ public class Cliente {
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-
-        String resposta, line;
 
         try {
             connectToServer();
@@ -258,7 +258,10 @@ public class Cliente {
                     resposta = enviarMensagemTcp(mensagem);
 
                     System.out.println(resposta.getTexto());
-                    sair = true;
+
+                    if (resposta.getAlvo().equals(Alvo.OK)) {
+                        sair = true;
+                    }
 
                     break;
                 case 12:
@@ -282,7 +285,7 @@ public class Cliente {
 
                     Integer duracao = null;
                     escolha = null;
-                    Integer tempoVotacao = Gestor.getDuracaoVotacao();
+                    Integer tempoVotacao = GESTOR.getDuracaoVotacao();
                     if (tempoVotacao == null) {
                         System.out.println("Não existe nenhuma duração definida");
                     } else {
@@ -319,6 +322,9 @@ public class Cliente {
                     break;
                 case 17:
                     // Iniciar votação
+                    mensagem = ConstrutorMensagens.iniciarVotacao(ip.getHostAddress());
+                    resposta = enviarMensagemTcp(mensagem);
+                    System.out.println(resposta.getTexto());
 
                     break;
                 case 99:

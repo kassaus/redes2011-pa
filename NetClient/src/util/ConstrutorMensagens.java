@@ -107,4 +107,8 @@ public class ConstrutorMensagens {
                 Alvo.DURACAO.ordinal(), duracao));
     }
 
+    public static String iniciarVotacao(final String ip) {
+        return Codificador.codificar(new Mensagem(TipoMensagem.VOTACAO.ordinal(), ip, VAZIO, VAZIO, STRING_VAZIA));
+    }
+
 }
