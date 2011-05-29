@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 
 public class Main {
 
+    private static final Gestor GESTOR = Gestor.getInstance();
     private static String ip = null;
 
     /**
@@ -17,7 +18,7 @@ public class Main {
             System.exit(1);
         }
         ip = args[0];
-        Gestor.getListaAdmin();
+        GESTOR.getListaAdmin();
         Cliente cliente = new Cliente(ip);
 
         if (isAdmin()) {
@@ -29,7 +30,7 @@ public class Main {
 
     private static Boolean isAdmin() {
         try {
-            return Gestor.getListaAdmin().contains(InetAddress.getByName(ip).getHostAddress());
+            return GESTOR.getListaAdmin().contains(InetAddress.getByName(ip).getHostAddress());
         } catch (UnknownHostException e) {
             return false;
         }
